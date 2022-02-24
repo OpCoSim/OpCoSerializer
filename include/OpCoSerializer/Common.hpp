@@ -23,6 +23,7 @@
 
 // Standard library includes
 #include <utility>
+#include <tuple>
 #include <type_traits>
 #include <concepts>
 
@@ -61,13 +62,22 @@ namespace OpCoSerializer
         return Property<Class, T>{member, name};
     }
 
-    /// Calls the function f for each constant in the integer sequence.
-    /// @param f The function.
-    template <typename T, T... S, typename F>
-    constexpr void ForSequence(std::integer_sequence<T, S...>, F&& f)
+    /// Forwards to MakeProperty, assuming the member name and serialization name
+    /// are the same.
+    #define OPCOSERIALIZER_PROPERTY(CLASS, MEMBER) MakeProperty(&CLASS::MEMBER, #MEMBER)
+
+    /// A base class for a serializer.
+    class SerializerBase
     {
-        (static_cast<void>(f(std::integral_constant<T, S>{})), ...);
-    }
+        protected:
+            /// Calls the function f for each constant in the integer sequence.
+            /// @param f The function.
+            template <typename T, T... S, typename F>
+            constexpr void ForSequence(std::integer_sequence<T, S...>, F&& f)
+            {
+                (static_cast<void>(f(std::integral_constant<T, S>{})), ...);
+            }
+    };
 }
 
 #endif // OPCOSERIALIZER_COMMON_HPP

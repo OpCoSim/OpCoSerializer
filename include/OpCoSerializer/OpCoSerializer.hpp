@@ -22,6 +22,6 @@
 #define OPCOSERIALIZER_OPCOSERIALIZER_HPP
 
 // This header includes the entirety of the OpCoSerializer library.
-#include "OpCoSerializer/Common.hpp"
+#include "OpCoSerializer/JsonSerializer.hpp"
 
 #endif // OPCOSERIALIZER_OPCOSERIALIZER_HPP

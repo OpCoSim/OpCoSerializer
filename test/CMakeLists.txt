@@ -14,8 +14,11 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 include_directories(./../include)
+include_directories(./../ThirdParty/include)
 
-add_executable(opcoserializertests ./PropertiesTests.cpp)
+add_executable(opcoserializertests
+    ./PropertiesTests.cpp
+    ./JsonSerializerTests.cpp)
 
 target_link_libraries(opcoserializertests gtest_main)
 
