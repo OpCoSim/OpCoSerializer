@@ -15,7 +15,7 @@ enable_testing()
 
 include_directories(./../include)
 
-add_executable(opcoserializertests ./Stub.cpp)
+add_executable(opcoserializertests ./PropertiesTests.cpp)
 
 target_link_libraries(opcoserializertests gtest_main)
 

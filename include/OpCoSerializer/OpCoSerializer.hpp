@@ -24,4 +24,4 @@
 // This header includes the entirety of the OpCoSerializer library.
 #include "OpCoSerializer/Properties.hpp"
 
-#endif // OPCOSERIALIZER
+#endif // OPCOSERIALIZER_OPCOSERIALIZER_HPP

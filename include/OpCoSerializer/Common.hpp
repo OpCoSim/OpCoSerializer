@@ -26,4 +26,4 @@
 #include <type_traits>
 #include <concepts>
 
-#endif
+#endif // OPCOSERIALIZER_COMMON_HPP
