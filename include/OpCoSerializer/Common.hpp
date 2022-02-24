@@ -26,4 +26,48 @@
 #include <type_traits>
 #include <concepts>
 
+namespace OpCoSerializer
+{
+    /// Metadata for a propery to be serialized.
+    template<typename Class, typename T>
+    struct Property
+    {
+        /// The member type.
+        using Type = T;
+
+        /// The member pointer.
+        T Class::* member;
+
+        /// The propery name.
+        char const* name;
+
+        /// Initializes a new instance of the Property type.
+        /// @param member The member pointer.
+        /// @param name The property name.
+        constexpr Property(T Class::* member, char const* name)
+            : member{member},
+              name{name}
+        {
+        }
+    };
+
+    /// Creates a property for the given member with a given name.
+    /// @param member The member pointer.
+    /// @param name The property name.
+    /// @returns The created property.
+    template<typename Class, typename T>
+    constexpr auto MakeProperty(T Class::* member, const char* name)
+    {
+        return Property<Class, T>{member, name};
+    }
+
+    /// Calls the function f for each constant in the integer sequence.
+    /// @param f The function.
+    template <typename T, T... S, typename F>
+    constexpr void ForSequence(std::integer_sequence<T, S...>, F&& f)
+    {
+        (static_cast<void>(f(std::integral_constant<T, S>{})), ...);
+    }
+}
+
 #endif // OPCOSERIALIZER_COMMON_HPP
