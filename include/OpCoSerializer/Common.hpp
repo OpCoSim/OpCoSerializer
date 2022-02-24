@@ -22,6 +22,7 @@
 #define OPCOSERIALIZER_COMMON_HPP
 
 // Standard library includes
+#include <cstdint>
 #include <utility>
 #include <tuple>
 #include <type_traits>

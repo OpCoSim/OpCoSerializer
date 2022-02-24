@@ -28,6 +28,24 @@
 
 namespace OpCoSerializer
 {
+    /// Generically serializes a key and value to the given document.
+    /// @remarks Specialize this function in order to be able serialize any type
+    /// of data. By default, this template will only support rapidjson supported
+    /// types for Value().
+    /// @tparam T The type of value.
+    /// @param document The document.
+    /// @param key The key.
+    /// @param value The value.
+    template <typename T>
+    void AddJsonValue(rapidjson::Document& document, std::string&& key, T&& value)
+    {
+        document.AddMember(
+            rapidjson::Value(key.c_str(), key.size(), document.GetAllocator()),
+            rapidjson::Value(value),
+            document.GetAllocator()
+        );
+    }
+
     /// Serializes objects to and from JSON.
     struct JsonSerializer final : SerializerBase
     {
@@ -35,7 +53,7 @@ namespace OpCoSerializer
         /// @param value The value.
         /// @returns The serialized string.
         template <typename T>
-        std::string Serialize(T const& value)
+        std::string Serialize(T const& value) const
         {
             rapidjson::Document document;
             document.SetObject();
@@ -44,26 +62,13 @@ namespace OpCoSerializer
             ForSequence(std::make_index_sequence<numberOfProperties>{}, [&](auto i) {
                 auto constexpr property = std::get<i>(T::properties);
                 auto propertyValue = value.*(property.member);
-                auto name = std::string(property.name);
-                auto key = rapidjson::Value(name.c_str(), name.size(), document.GetAllocator());
-                // std::cout << name << " = " << propertyValue << std::endl; 
-
-                // document.AddMember(key, rapidjson::Value(propertyValue), document.GetAllocator());
+                AddJsonValue(document, std::string(property.name), propertyValue);
             });
 
             rapidjson::StringBuffer buffer;
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.Accept(writer);
             return buffer.GetString();
-        }
-
-        /// Deserializes the given JSON string.
-        /// @param serializedString The JSON string.
-        /// @returns The deserialized value.
-        template <typename T>
-        T Deserialize(std::string const& serializedString)
-        {
-            return T();
         }
     };
 }
