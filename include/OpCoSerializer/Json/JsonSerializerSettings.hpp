@@ -18,10 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef OPCOSERIALIZER_OPCOSERIALIZER_HPP
-#define OPCOSERIALIZER_OPCOSERIALIZER_HPP
+#ifndef OPCOSERIALIZER_JSON_SERIALIZER_SETTINGS_HPP
+#define OPCOSERIALIZER_JSON_SERIALIZER_SETTINGS_HPP
 
-// This header includes the entirety of the OpCoSerializer library.
-#include "OpCoSerializer/Json/JsonSerializer.hpp"
+namespace OpCoSerializer::Json
+{
+    /// Configuration for a JsonSerializer.
+    struct JsonSerializerSettings final
+    {
+        /// Indicates when deserializing, if a member is not present,
+        /// whether or not an exception should be thrown. 
+        bool propertiesRequired = false;
 
-#endif // OPCOSERIALIZER_OPCOSERIALIZER_HPP
+        /// Whether or not to serialize JSON to a prettier indented string.
+        bool pretty = false;
+    };
+}
+
+#endif // OPCOSERIALIZER_JSON_SERIALIZER_SETTINGS_HPP

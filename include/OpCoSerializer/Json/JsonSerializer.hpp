@@ -26,26 +26,17 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/prettywriter.h"
 #include "OpCoSerializer/Common.hpp"
+#include "OpCoSerializer/Json/JsonSerializerSettings.hpp"
+#include "OpCoSerializer/Json/JsonTypeSerializer.hpp"
 
 namespace OpCoSerializer::Json
-{
-    /// Configuration for a JsonSerializer.
-    struct JsonSerializerSettings final
-    {
-        /// Indicates when deserializing, if a member is not present,
-        /// whether or not an exception should be thrown. 
-        bool propertiesRequired = false;
-
-        /// Whether or not to serialize JSON to a prettier indented string.
-        bool pretty = false;
-    };
-
+{  
     /// Generically serializes the value to a JSON value. For flexibility, the document
     /// is passed in so members (such as its allocator - required for some rapidjson
     /// functionality) is also available.
     /// @remarks Specialize this function in order to be able serialize any type
     /// of data. By default, this template will only support rapidjson supported
-    /// types for Value().
+    /// types for Value(). To enable nested serialization, call this recursively.
     /// @param document The document.
     /// @param value The value.
     template <typename T>
@@ -57,7 +48,7 @@ namespace OpCoSerializer::Json
     /// Generically deserializes a typed value from a JSON value.
     /// @remarks Specialize this function in order to be able deserialize any type
     /// of data. By default, this template will only support rapidjson supported
-    /// types for generic values.
+    /// types for generic values. To enable nested deserialization, call this recursively.
     /// @tparam T The type of value.
     /// @param value The value.
     /// @returns The deserialized value.
@@ -91,11 +82,12 @@ namespace OpCoSerializer::Json
                 document.SetObject();
 
                 ForProperty<T>([&](auto& property) {
+                    using Type = typename std::remove_cvref<decltype(property)>::type::Type;
                     auto propertyValue = value.*(property.member);
                     auto key = std::string(property.name);
                     document.AddMember(
                         rapidjson::Value(key.c_str(), key.size(), document.GetAllocator()),
-                        SerializeCore(document, propertyValue),
+                        JsonTypeSerializer<Type>::Serialize(document, propertyValue),
                         document.GetAllocator()
                     );
                 });
@@ -112,6 +104,8 @@ namespace OpCoSerializer::Json
             template <typename T>
             T Deserialize(std::string const& serializedString)
             {
+                using namespace rapidjson;
+
                 // If possible, use the default instance of T. This makes partial deserialization
                 // much more intuitive. Otherwise an unitialized instance is used.
                 T value;
@@ -120,18 +114,18 @@ namespace OpCoSerializer::Json
                     value = T{};
                 }
 
-                rapidjson::Document document;
+                Document document;
                 document.Parse(serializedString.c_str());
 
                 ForProperty<T>([&](auto& property) {
+                    using Type = typename std::remove_cvref<decltype(property)>::type::Type;
                     auto iterator = document.FindMember(property.name);
                     if (iterator == document.MemberEnd() && _settings.propertiesRequired)
                     {
                         throw OpCoSerializerException(std::string("Missing property during deserialization - ") + property.name);
                     }
 
-                    using Type = typename std::remove_cvref<decltype(property)>::type::Type;
-                    value.*(property.member) = DeserializeCore<Type>(iterator->value);
+                    value.*(property.member) = JsonTypeSerializer<Type>::Deserialize(iterator->value);
                 });
 
                 return value;
