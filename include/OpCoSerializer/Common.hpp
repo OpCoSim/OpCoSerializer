@@ -84,7 +84,7 @@ namespace OpCoSerializer
 
     /// Forwards to MakeProperty, assuming the member name and serialization name
     /// are the same.
-    #define OPCOSERIALIZER_PROPERTY(CLASS, MEMBER) MakeProperty(&CLASS::MEMBER, #MEMBER)
+    #define OPCOSERIALIZER_PROPERTY(CLASS, MEMBER) OpCoSerializer::MakeProperty(&CLASS::MEMBER, #MEMBER)
 
     /// A base class for a serializer.
     class SerializerBase

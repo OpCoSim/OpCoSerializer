@@ -2,6 +2,7 @@
 #include "OpCoSerializer/OpCoSerializer.hpp"
 
 using namespace OpCoSerializer;
+using namespace OpCoSerializer::Json;
 
 struct TestTypeWithProperties final
 {

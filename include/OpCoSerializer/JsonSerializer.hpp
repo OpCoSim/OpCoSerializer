@@ -27,7 +27,7 @@
 #include "rapidjson/prettywriter.h"
 #include "OpCoSerializer/Common.hpp"
 
-namespace OpCoSerializer
+namespace OpCoSerializer::Json
 {
     /// Configuration for a JsonSerializer.
     struct JsonSerializerSettings final
