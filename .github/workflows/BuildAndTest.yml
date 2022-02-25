@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: debian:bullseye-slim
+    container: opcosim/opcosim-build:0.1
     steps:
       - name: Checkout
         uses: actions/checkout@v2

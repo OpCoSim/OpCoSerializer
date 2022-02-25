@@ -26,9 +26,14 @@ struct TestTypeWithProperties final
 
 TEST(JsonSerializer, SerializesExpectedString)
 {
-    TestTypeWithProperties value{};
     JsonSerializer serializer{};
-    auto expected = "{\"integer\":4,\"double\":1.23,\"boolean\":true,\"vector\":[1.2,3.4]}";
+    auto expected = "{\"integer\":5,\"double\":1.5,\"boolean\":true,\"vector\":[1.2]}";
+    TestTypeWithProperties value = {
+        5,
+        1.5,
+        true,
+        std::vector<double>{1.2}
+    };
 
     auto serialized = serializer.Serialize(value);
 

@@ -67,7 +67,7 @@ namespace OpCoSerializer::Json
             Value array;
             array.SetArray();
 
-            for(auto& element : value)
+            for (auto& element : value)
             {
                 array.PushBack(
                     JsonTypeSerializer<TElement>::Serialize(document, element),
