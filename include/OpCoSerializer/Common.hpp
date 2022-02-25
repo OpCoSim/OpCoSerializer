@@ -96,9 +96,9 @@ namespace OpCoSerializer
             template <typename T, typename F>
             constexpr void ForProperty(F&& f)
             {
-                auto constexpr numberOfProperties = std::tuple_size<decltype(T::properties)>::value;
+                auto constexpr numberOfProperties = std::tuple_size<decltype(T::properties())>::value;
                 ForSequence(std::make_index_sequence<numberOfProperties>{}, [&](auto i) {
-                    auto constexpr property = std::get<i>(T::properties);
+                    auto constexpr property = std::get<i>(T::properties());
                     f(property);
                 });
             }

@@ -25,12 +25,14 @@ struct TestTypeWithProperties final
     bool b = true;
     std::vector<double> v{1.2, 3.4};
 
-    static auto constexpr properties = std::make_tuple(
+    // Note - with GCC this can be a field. The function is required
+    // for MSVC compatibility.
+    static auto constexpr properties() { return std::make_tuple(
         MakeProperty(&TestTypeWithProperties::i, "integer"),
         MakeProperty(&TestTypeWithProperties::d, "double"),
         MakeProperty(&TestTypeWithProperties::b, "boolean"),
         MakeProperty(&TestTypeWithProperties::v, "vector")
-    );
+    );};
 };
 ```
 
@@ -81,4 +83,4 @@ OpCoSerializer makes use of the following third party projects:
 
 ## License
 
-This program is distributed under the [MIT License](./LICENSE "License link").
+This library is distributed under the [MIT License](./LICENSE "License link").

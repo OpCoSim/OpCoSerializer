@@ -16,12 +16,12 @@ struct TestTypeWithProperties final
         return i == other.i && d == other.d && b == other.b && v == other.v;
     }
 
-    static auto constexpr properties = std::make_tuple(
+    static auto constexpr properties() { return std::make_tuple(
         MakeProperty(&TestTypeWithProperties::i, "integer"),
         MakeProperty(&TestTypeWithProperties::d, "double"),
         MakeProperty(&TestTypeWithProperties::b, "boolean"),
         MakeProperty(&TestTypeWithProperties::v, "vector")
-    );
+    );};
 };
 
 TEST(JsonSerializer, SerializesExpectedString)
