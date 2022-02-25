@@ -10,4 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### ✨ Added
 
 - Initial project 🎂
-- JSON serializer
+- JSON serializer implementation.
+- Extendable type serialization.
+- Extendable serializer interface.
+
+### 👷 Build
+
+- Added build and test GitHub action.
+
+### 📚 Third Party Libraries
+
+- Added [rapidjson](https://github.com/Tencent/rapidjson "rapidjson repository link.").
