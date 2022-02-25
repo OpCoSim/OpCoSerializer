@@ -37,7 +37,7 @@ namespace OpCoSerializer
     /// @param key The key.
     /// @param value The value.
     template <typename T>
-    void AddJsonValue(rapidjson::Document& document, std::string&& key, T&& value)
+    inline void AddJsonValue(rapidjson::Document& document, std::string&& key, T&& value)
     {
         document.AddMember(
             rapidjson::Value(key.c_str(), key.size(), document.GetAllocator()),
@@ -46,21 +46,33 @@ namespace OpCoSerializer
         );
     }
 
+    /// Generically gets a generically typed value from a JSON value.
+    /// @remarks Specialize this function in order to be able deserialize any type
+    /// of data. By default, this template will only support rapidjson supported
+    /// types for generic values.
+    /// @tparam T The type of value.
+    /// @param value The value.
+    /// @returns The deserialized value.
+    template <typename T>
+    inline T GetValueFromJson(rapidjson::Value::ConstValueIterator value)
+    {
+        return value->Get<T>();
+    }
+
     /// Serializes objects to and from JSON.
     struct JsonSerializer final : SerializerBase
     {
         /// Serializes the given value to JSON.
+        /// @tparam T the type of the value to serialize.
         /// @param value The value.
         /// @returns The serialized string.
         template <typename T>
-        std::string Serialize(T const& value) const
+        std::string Serialize(T const& value)
         {
             rapidjson::Document document;
             document.SetObject();
 
-            auto constexpr numberOfProperties = std::tuple_size<decltype(T::properties)>::value;
-            ForSequence(std::make_index_sequence<numberOfProperties>{}, [&](auto i) {
-                auto constexpr property = std::get<i>(T::properties);
+            ForProperty<T>([&](auto& property) {
                 auto propertyValue = value.*(property.member);
                 AddJsonValue(document, std::string(property.name), propertyValue);
             });
@@ -69,6 +81,32 @@ namespace OpCoSerializer
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             document.Accept(writer);
             return buffer.GetString();
+        }
+
+        /// Deserializes the string to a value of type T.
+        /// @tparam T the type of the value to deserialize to.
+        /// @param serializedString The serialized string.
+        /// @returns The deserialized value.
+        template <typename T>
+        T Deserialize(std::string const& serializedString)
+        {
+            T value;
+            rapidjson::Document document;
+            document.Parse(serializedString.c_str());
+            rapidjson::Value::ConstValueIterator iterator = document.Begin();
+
+            ForProperty<T>([&](auto& property) {
+                if (iterator == document.End())
+                {
+                    throw std::runtime_error("JSON document does not contain enough elements.");
+                }
+
+                using Type = typename std::remove_cvref<decltype(property)>::type::Type;
+                value.*(property.member) = GetValueFromJson<Type>(iterator);
+                ++iterator;
+            });
+
+            return value;
         }
     };
 }

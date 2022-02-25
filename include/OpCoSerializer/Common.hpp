@@ -27,6 +27,7 @@
 #include <tuple>
 #include <type_traits>
 #include <concepts>
+#include <stdexcept>
 
 namespace OpCoSerializer
 {
@@ -71,6 +72,19 @@ namespace OpCoSerializer
     class SerializerBase
     {
         protected:
+            /// Iterates the serializable properties of T and applies the function f to each.
+            /// @param f The function.
+            template <typename T, typename F>
+            constexpr void ForProperty(F&& f)
+            {
+                auto constexpr numberOfProperties = std::tuple_size<decltype(T::properties)>::value;
+                ForSequence(std::make_index_sequence<numberOfProperties>{}, [&](auto i) {
+                    auto constexpr property = std::get<i>(T::properties);
+                    f(property);
+                });
+            }
+
+        private:
             /// Calls the function f for each constant in the integer sequence.
             /// @param f The function.
             template <typename T, T... S, typename F>
