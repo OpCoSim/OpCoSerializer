@@ -38,7 +38,7 @@ namespace OpCoSerializer::Json
         /// is also available.
         /// @param document The document.
         /// @param value The value.
-        static rapidjson::Value Serialize([[maybe_unused]] rapidjson::Document&, T& value)
+        static rapidjson::Value Serialize(rapidjson::Document&, T& value)
         {
             return rapidjson::Value(value);
         }
@@ -49,6 +49,48 @@ namespace OpCoSerializer::Json
         static T Deserialize(rapidjson::Value& value)
         {
             return value.Get<T>();
+        }
+    };
+
+    /// Partial JsonTypeSerializer specialization for a vector of a given type.
+    /// @remarks This will forward calls to a JsonTypeSerializer<TElement>, thus
+    /// serialization must be defined for TElement (or TElement must be natively
+    /// supported by rapidjson).
+    /// @tparam TElement The type of the elements in the vector.
+    template <typename TElement>
+    struct JsonTypeSerializer<std::vector<TElement>>
+    {
+        static rapidjson::Value Serialize(rapidjson::Document& document, std::vector<TElement>& value)
+        {
+            using namespace rapidjson;
+            
+            Value array;
+            array.SetArray();
+
+            for(auto& element : value)
+            {
+                array.PushBack(
+                    JsonTypeSerializer<TElement>::Serialize(document, element),
+                    document.GetAllocator()
+                );
+            }
+
+            return array;
+        }
+
+        static std::vector<TElement> Deserialize(rapidjson::Value& value)
+        {
+            auto array = value.GetArray();
+            typename std::vector<TElement>::size_type i = 0;
+            std::vector<TElement> vector(array.Size());
+
+            for (auto& jsonElement : array)
+            {
+                vector[i] = JsonTypeSerializer<TElement>::Deserialize(jsonElement);
+                ++i;
+            }
+
+            return vector;
         }
     };
 }

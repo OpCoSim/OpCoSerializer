@@ -28,6 +28,7 @@
 #include <type_traits>
 #include <concepts>
 #include <stdexcept>
+#include <vector>
 
 namespace OpCoSerializer
 {

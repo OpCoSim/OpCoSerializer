@@ -30,34 +30,7 @@
 #include "OpCoSerializer/Json/JsonTypeSerializer.hpp"
 
 namespace OpCoSerializer::Json
-{  
-    /// Generically serializes the value to a JSON value. For flexibility, the document
-    /// is passed in so members (such as its allocator - required for some rapidjson
-    /// functionality) is also available.
-    /// @remarks Specialize this function in order to be able serialize any type
-    /// of data. By default, this template will only support rapidjson supported
-    /// types for Value(). To enable nested serialization, call this recursively.
-    /// @param document The document.
-    /// @param value The value.
-    template <typename T>
-    inline rapidjson::Value SerializeCore([[maybe_unused]] rapidjson::Document&, T& value)
-    {
-        return rapidjson::Value(value);
-    }
-
-    /// Generically deserializes a typed value from a JSON value.
-    /// @remarks Specialize this function in order to be able deserialize any type
-    /// of data. By default, this template will only support rapidjson supported
-    /// types for generic values. To enable nested deserialization, call this recursively.
-    /// @tparam T The type of value.
-    /// @param value The value.
-    /// @returns The deserialized value.
-    template <typename T>
-    inline T DeserializeCore(rapidjson::Value& value)
-    {
-        return value.Get<T>();
-    }
-
+{
     /// Serializes objects to and from JSON.
     class JsonSerializer final : public SerializerBase
     {

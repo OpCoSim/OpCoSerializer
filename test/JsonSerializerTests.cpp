@@ -9,16 +9,18 @@ struct TestTypeWithProperties final
     int i = 4;
     double d = 1.23;
     bool b = true;
+    std::vector<double> v{1.2, 3.4};
 
     bool operator==(TestTypeWithProperties const& other) const
     {
-        return i == other.i && d == other.d && b == other.b;
+        return i == other.i && d == other.d && b == other.b && v == other.v;
     }
 
     static auto constexpr properties = std::make_tuple(
         MakeProperty(&TestTypeWithProperties::i, "integer"),
         MakeProperty(&TestTypeWithProperties::d, "double"),
-        MakeProperty(&TestTypeWithProperties::b, "boolean")
+        MakeProperty(&TestTypeWithProperties::b, "boolean"),
+        MakeProperty(&TestTypeWithProperties::v, "vector")
     );
 };
 
@@ -26,7 +28,7 @@ TEST(JsonSerializer, SerializesExpectedString)
 {
     TestTypeWithProperties value{};
     JsonSerializer serializer{};
-    auto expected = "{\"integer\":4,\"double\":1.23,\"boolean\":true}";
+    auto expected = "{\"integer\":4,\"double\":1.23,\"boolean\":true,\"vector\":[1.2,3.4]}";
 
     auto serialized = serializer.Serialize(value);
 
@@ -36,11 +38,12 @@ TEST(JsonSerializer, SerializesExpectedString)
 TEST(JsonSerializer, DeerializesExpectedValue)
 {
     JsonSerializer serializer{};
-    std::string string{"{\"integer\":7,\"double\":4.2,\"boolean\":false}"};
+    std::string string{"{\"integer\":7,\"double\":4.2,\"boolean\":false,\"vector\":[1.2,3.4,4.5]}"};
     TestTypeWithProperties expected = {
         7,
         4.2,
-        false
+        false,
+        std::vector<double>{1.2, 3.4, 4.5}
     };
 
     auto deserialized = serializer.Deserialize<TestTypeWithProperties>(string);
@@ -54,7 +57,8 @@ TEST(JsonSerializer, RoundTripTest)
     TestTypeWithProperties value = {
         42,
         3.14,
-        true
+        true,
+        std::vector<double>{1.2, 3.4, 4.5}
     };
     
     auto serialized = serializer.Serialize(value);
