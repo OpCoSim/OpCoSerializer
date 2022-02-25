@@ -24,6 +24,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
+#include "rapidjson/prettywriter.h"
 #include "OpCoSerializer/Common.hpp"
 
 namespace OpCoSerializer
@@ -34,6 +35,9 @@ namespace OpCoSerializer
         /// Indicates when deserializing, if a member is not present,
         /// whether or not an exception should be thrown. 
         bool propertiesRequired = false;
+
+        /// Whether or not to serialize JSON to a prettier indented string.
+        bool pretty = false;
     };
 
     /// Generically serializes a key and value to the given document.
@@ -85,7 +89,9 @@ namespace OpCoSerializer
             template <typename T>
             std::string Serialize(T const& value)
             {
-                rapidjson::Document document;
+                using namespace rapidjson;
+
+                Document document;
                 document.SetObject();
 
                 ForProperty<T>([&](auto& property) {
@@ -93,10 +99,9 @@ namespace OpCoSerializer
                     AddJsonValue(document, std::string(property.name), propertyValue);
                 });
 
-                rapidjson::StringBuffer buffer;
-                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-                document.Accept(writer);
-                return buffer.GetString();
+                return _settings.pretty
+                    ? StringifyDocument<PrettyWriter<StringBuffer>>(document)
+                    : StringifyDocument<Writer<StringBuffer>>(document);
             }
 
             /// Deserializes the string to a value of type T.
@@ -133,6 +138,15 @@ namespace OpCoSerializer
 
         private:
             JsonSerializerSettings _settings;
+
+            template <typename TWriter>
+            std::string StringifyDocument(rapidjson::Document& document)
+            {
+                rapidjson::StringBuffer buffer;
+                TWriter writer(buffer);
+                document.Accept(writer);
+                return buffer.GetString();
+            }
     };
 }
 
