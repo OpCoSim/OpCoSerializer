@@ -43,4 +43,21 @@ TEST(JsonSerializer, DeerializesExpectedValue)
     };
 
     auto deserialized = serializer.Deserialize<TestTypeWithProperties>(string);
+
+    ASSERT_EQ(expected, deserialized);
+}
+
+TEST(JsonSerializer, RoundTripTest)
+{
+    JsonSerializer serializer{};
+    TestTypeWithProperties value = {
+        42,
+        3.14,
+        true
+    };
+    
+    auto serialized = serializer.Serialize(value);
+    auto deserialized = serializer.Deserialize<TestTypeWithProperties>(serialized);
+
+    ASSERT_EQ(value, deserialized);
 }

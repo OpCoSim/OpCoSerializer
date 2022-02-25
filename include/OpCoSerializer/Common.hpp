@@ -31,6 +31,24 @@
 
 namespace OpCoSerializer
 {
+    /// An exception type for OpCoSerializer.
+    struct OpCoSerializerException final : std::runtime_error
+    {
+        /// Initializes a new instance of the OpCoSerializerException type.
+        /// @param message The message.
+        explicit OpCoSerializerException(char const* message)
+            : std::runtime_error(message)
+        {
+        }
+
+        /// Initializes a new instance of the OpCoSerializerException type.
+        /// @param message The message.
+        explicit OpCoSerializerException(std::string const& message)
+            : std::runtime_error(message)
+        {
+        }
+    };
+
     /// Metadata for a propery to be serialized.
     template<typename Class, typename T>
     struct Property
