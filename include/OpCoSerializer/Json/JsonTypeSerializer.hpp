@@ -93,6 +93,23 @@ namespace OpCoSerializer::Json
             return vector;
         }
     };
+
+    /// JsonTypeSerializer specialization for a C++ string.
+    template <>
+    struct JsonTypeSerializer<std::string>
+    {
+        static rapidjson::Value Serialize(rapidjson::Document& document, std::string& value)
+        {
+            rapidjson::Value string;
+            string.SetString(value.c_str(), value.size(), document.GetAllocator());
+            return string;
+        }
+
+        static std::string Deserialize(rapidjson::Value& value)
+        {
+            return std::string(value.GetString());
+        }
+    };
 }
 
 #endif // OPCOSERIALIZER_JSON_TYPE_SERIALIZER_HPP
