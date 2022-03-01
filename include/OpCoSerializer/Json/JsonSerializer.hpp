@@ -89,7 +89,15 @@ namespace OpCoSerializer::Json
                 }
 
                 Document document;
-                document.Parse(serializedString.c_str());
+                try
+                {
+                    document.Parse(serializedString.c_str());
+                }
+                catch (std::runtime_error& exception)
+                {
+                    auto message = std::string("Error whilst parsing JSON document from string - ") + std::string(exception.what());
+                    throw OpCoSerializerException(message);
+                }
 
                 ForProperty<T>([&](auto& property) {
                     using PropertyType = typename std::remove_cvref<decltype(property)>::type;
