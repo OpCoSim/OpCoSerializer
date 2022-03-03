@@ -37,13 +37,43 @@ struct TestTypeWithProperties final
         return i == other.i && d == other.d && b == other.b && v == other.v;
     }
 
-    static auto constexpr properties() { return std::make_tuple(
-        MakeProperty(&TestTypeWithProperties::i, "integer"),
-        MakeProperty(&TestTypeWithProperties::d, "double"),
-        MakeProperty(&TestTypeWithProperties::b, "boolean"),
-        MakeProperty(&TestTypeWithProperties::v, "vector"),
-        MakeProperty(&TestTypeWithProperties::s, "string")
-    );};
+    static auto constexpr properties() { 
+        return std::make_tuple(
+            MakeProperty(&TestTypeWithProperties::i, "integer"),
+            MakeProperty(&TestTypeWithProperties::d, "double"),
+            MakeProperty(&TestTypeWithProperties::b, "boolean"),
+            MakeProperty(&TestTypeWithProperties::v, "vector"),
+            MakeProperty(&TestTypeWithProperties::s, "string")
+        );
+    };
+};
+
+struct Nested final
+{
+    int value;
+
+    bool operator==(Nested const& other) const
+    {
+        return value == other.value;
+    }
+
+    static auto constexpr properties() { 
+        return std::make_tuple(MakeProperty(&Nested::value, "value"));
+    };
+};
+
+struct WithNested final
+{
+    Nested nested;
+
+    bool operator==(WithNested const& other) const
+    {
+        return nested == other.nested;
+    }
+
+    static auto constexpr properties() { 
+        return std::make_tuple(MakeProperty(&WithNested::nested, "nested"));
+    };
 };
 
 TEST(JsonSerializer, SerializesExpectedString)
@@ -92,6 +122,21 @@ TEST(JsonSerializer, RoundTripTest)
     
     auto serialized = serializer.Serialize(value);
     auto deserialized = serializer.Deserialize<TestTypeWithProperties>(serialized);
+
+    ASSERT_EQ(value, deserialized);
+}
+
+TEST(JsonSerializer, NestedRoundTripTest)
+{
+    JsonSerializer serializer{};
+    WithNested value = {
+        Nested {
+            4
+        }
+    };
+    
+    auto serialized = serializer.Serialize(value);
+    auto deserialized = serializer.Deserialize<WithNested>(serialized);
 
     ASSERT_EQ(value, deserialized);
 }

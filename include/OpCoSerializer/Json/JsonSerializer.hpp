@@ -32,7 +32,7 @@
 namespace OpCoSerializer::Json
 {
     /// Serializes objects to and from JSON.
-    class JsonSerializer final : public SerializerBase
+    class JsonSerializer final
     {
         public:
             /// Initializes a new instance of the JsonSerializer type.

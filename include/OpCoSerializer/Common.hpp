@@ -107,31 +107,25 @@ namespace OpCoSerializer
     /// are the same.
     #define OPCOSERIALIZER_PROPERTY(CLASS, MEMBER) OpCoSerializer::MakeProperty(&CLASS::MEMBER, #MEMBER)
 
-    /// A base class for a serializer.
-    class SerializerBase
+    /// Calls the function f for each constant in the integer sequence.
+    /// @param f The function.
+    template <typename T, T... S, typename F>
+    constexpr inline void ForSequence(std::integer_sequence<T, S...>, F&& f)
     {
-        protected:
-            /// Iterates the serializable properties of T and applies the function f to each.
-            /// @param f The function.
-            template <typename T, typename F>
-            constexpr void ForProperty(F&& f)
-            {
-                auto constexpr numberOfProperties = std::tuple_size<decltype(T::properties())>::value;
-                ForSequence(std::make_index_sequence<numberOfProperties>{}, [&](auto i) {
-                    auto constexpr property = std::get<i>(T::properties());
-                    f(property);
-                });
-            }
+        (static_cast<void>(f(std::integral_constant<T, S>{})), ...);
+    }
 
-        private:
-            /// Calls the function f for each constant in the integer sequence.
-            /// @param f The function.
-            template <typename T, T... S, typename F>
-            constexpr void ForSequence(std::integer_sequence<T, S...>, F&& f)
-            {
-                (static_cast<void>(f(std::integral_constant<T, S>{})), ...);
-            }
-    };
+    /// Iterates the serializable properties of T and applies the function f to each.
+    /// @param f The function.
+    template <typename T, typename F>
+    constexpr inline void ForProperty(F&& f)
+    {
+        auto constexpr numberOfProperties = std::tuple_size<decltype(T::properties())>::value;
+        ForSequence(std::make_index_sequence<numberOfProperties>{}, [&](auto i) {
+            auto constexpr property = std::get<i>(T::properties());
+            f(property);
+        });
+    }
 }
 
 #endif // OPCOSERIALIZER_COMMON_HPP
