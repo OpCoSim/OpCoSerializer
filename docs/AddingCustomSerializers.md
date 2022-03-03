@@ -1,13 +1,13 @@
 # Adding Custom Serializers
 
-OpCoSerializer provides a `SerializerBase` class with serialization helpers.
+OpCoSerializer provides serialization helpers.
 This can be used to create custom serializer implementations using a type's
 provided metadata about its serializable properties.
 
-The interface for a serializer should be:
+The informal interface for a serializer is as follows:
 
 ```cpp
-class MySerializer final : public SerializerBase
+class MySerializer final
 {
     template <typename T>
     std::string Serialize(T const& value)
@@ -23,18 +23,18 @@ class MySerializer final : public SerializerBase
 }
 ```
 
-By using the `SerializerBase::ForProperty<T>` function, one can iterate through
+By using the `OpCoserializer::ForProperty<T>` free function, one can iterate through
 `T`'s serializable properties and perform the desired serialization:
 
 ```cpp
-class MySerializer final : public SerializerBase
+class MySerializer final
 {
     template <typename T>
     std::string Serialize(T const& value)
     {
         // Prerequsite setup...
 
-        ForProperty<T>([&](auto& property) {
+        OpCoserializer::ForProperty<T>([&](auto& property) {
             // Type contains the type of the class member
             using Type = typename std::remove_cvref<decltype(property)>::type::Type;
 
