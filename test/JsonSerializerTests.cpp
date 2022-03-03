@@ -37,7 +37,7 @@ struct TestTypeWithProperties final
         return i == other.i && d == other.d && b == other.b && v == other.v;
     }
 
-    static auto constexpr properties() { 
+    static auto constexpr SerializerProperties() { 
         return std::make_tuple(
             MakeProperty(&TestTypeWithProperties::i, "integer"),
             MakeProperty(&TestTypeWithProperties::d, "double"),
@@ -57,7 +57,7 @@ struct Nested final
         return value == other.value;
     }
 
-    static auto constexpr properties() { 
+    static auto constexpr SerializerProperties() { 
         return std::make_tuple(MakeProperty(&Nested::value, "value"));
     };
 };
@@ -71,7 +71,7 @@ struct WithNested final
         return nested == other.nested;
     }
 
-    static auto constexpr properties() { 
+    static auto constexpr SerializerProperties() { 
         return std::make_tuple(MakeProperty(&WithNested::nested, "nested"));
     };
 };

@@ -57,7 +57,7 @@ namespace OpCoSerializer
     {
         private:
             template<typename U>
-            static auto test(int) -> decltype(U::properties(), std::true_type{});
+            static auto test(int) -> decltype(U::SerializerProperties(), std::true_type{});
 
             template<typename>
             static std::false_type test(...);
@@ -120,9 +120,9 @@ namespace OpCoSerializer
     template <typename T, typename F>
     constexpr inline void ForProperty(F&& f)
     {
-        auto constexpr numberOfProperties = std::tuple_size<decltype(T::properties())>::value;
+        auto constexpr numberOfProperties = std::tuple_size<decltype(T::SerializerProperties())>::value;
         ForSequence(std::make_index_sequence<numberOfProperties>{}, [&](auto i) {
-            auto constexpr property = std::get<i>(T::properties());
+            auto constexpr property = std::get<i>(T::SerializerProperties());
             f(property);
         });
     }

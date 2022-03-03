@@ -32,7 +32,7 @@ struct WithProperties final
 {
     int i = 4;
 
-    static auto constexpr properties()
+    static auto constexpr SerializerProperties()
     {
         return std::make_tuple(
             MakeProperty(&WithProperties::i, "integer")
