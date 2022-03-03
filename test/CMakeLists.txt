@@ -17,7 +17,7 @@ include_directories(./../include)
 include_directories(./../ThirdParty/include)
 
 add_executable(opcoserializertests
-    ./PropertiesTests.cpp
+    ./CommonTests.cpp
     ./JsonSerializerTests.cpp)
 
 target_link_libraries(opcoserializertests gtest_main)

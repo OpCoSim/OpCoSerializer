@@ -50,6 +50,26 @@ namespace OpCoSerializer
         }
     };
 
+    /// Checks whether or not T has serializable properties.
+    /// @tparam T The type to check.
+    template <typename T>
+    class HasSerializableProperties final
+    {
+        private:
+            template<typename U>
+            static auto test(int) -> decltype(U::properties(), std::true_type{});
+
+            template<typename>
+            static std::false_type test(...);
+
+        public:
+            static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
+    };
+
+    /// Helper for the value of HasSerializableProperties<T>.
+    template <typename T>
+    bool constexpr HasSerializablePropertiesV = HasSerializableProperties<T>::value;
+
     /// Metadata for a propery to be serialized.
     template<typename Class, typename T>
     struct Property
