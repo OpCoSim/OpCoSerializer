@@ -32,7 +32,7 @@
 namespace OpCoSerializer::Json
 {
     /// Serializes objects to and from JSON.
-    class JsonSerializer final : public SerializerBase
+    class JsonSerializer final
     {
         public:
             /// Initializes a new instance of the JsonSerializer type.
@@ -55,7 +55,8 @@ namespace OpCoSerializer::Json
                 document.SetObject();
 
                 ForProperty<T>([&](auto& property) {
-                    using Type = typename std::remove_cvref<decltype(property)>::type::Type;
+                    using PropertyType = typename std::remove_cvref<decltype(property)>::type;
+                    using Type = std::remove_cvref<typename PropertyType::Type>::type;
                     auto propertyValue = value.*(property.member);
                     auto key = std::string(property.name);
                     document.AddMember(
@@ -88,10 +89,19 @@ namespace OpCoSerializer::Json
                 }
 
                 Document document;
-                document.Parse(serializedString.c_str());
+                try
+                {
+                    document.Parse(serializedString.c_str());
+                }
+                catch (std::runtime_error& exception)
+                {
+                    auto message = std::string("Error whilst parsing JSON document from string - ") + std::string(exception.what());
+                    throw OpCoSerializerException(message);
+                }
 
                 ForProperty<T>([&](auto& property) {
-                    using Type = typename std::remove_cvref<decltype(property)>::type::Type;
+                    using PropertyType = typename std::remove_cvref<decltype(property)>::type;
+                    using Type = std::remove_cvref<typename PropertyType::Type>::type;
                     auto iterator = document.FindMember(property.name);
                     if (iterator == document.MemberEnd() && _settings.propertiesRequired)
                     {

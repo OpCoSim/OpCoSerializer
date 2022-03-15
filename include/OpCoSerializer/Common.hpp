@@ -50,6 +50,26 @@ namespace OpCoSerializer
         }
     };
 
+    /// Checks whether or not T has serializable properties.
+    /// @tparam T The type to check.
+    template <typename T>
+    class HasSerializableProperties final
+    {
+        private:
+            template<typename U>
+            static auto test(int) -> decltype(U::SerializerProperties(), std::true_type{});
+
+            template<typename>
+            static std::false_type test(...);
+
+        public:
+            static constexpr bool value = std::is_same<decltype(test<T>(0)), std::true_type>::value;
+    };
+
+    /// Helper for the value of HasSerializableProperties<T>.
+    template <typename T>
+    bool constexpr HasSerializablePropertiesV = HasSerializableProperties<T>::value;
+
     /// Metadata for a propery to be serialized.
     template<typename Class, typename T>
     struct Property
@@ -87,31 +107,25 @@ namespace OpCoSerializer
     /// are the same.
     #define OPCOSERIALIZER_PROPERTY(CLASS, MEMBER) OpCoSerializer::MakeProperty(&CLASS::MEMBER, #MEMBER)
 
-    /// A base class for a serializer.
-    class SerializerBase
+    /// Calls the function f for each constant in the integer sequence.
+    /// @param f The function.
+    template <typename T, T... S, typename F>
+    constexpr inline void ForSequence(std::integer_sequence<T, S...>, F&& f)
     {
-        protected:
-            /// Iterates the serializable properties of T and applies the function f to each.
-            /// @param f The function.
-            template <typename T, typename F>
-            constexpr void ForProperty(F&& f)
-            {
-                auto constexpr numberOfProperties = std::tuple_size<decltype(T::properties())>::value;
-                ForSequence(std::make_index_sequence<numberOfProperties>{}, [&](auto i) {
-                    auto constexpr property = std::get<i>(T::properties());
-                    f(property);
-                });
-            }
+        (static_cast<void>(f(std::integral_constant<T, S>{})), ...);
+    }
 
-        private:
-            /// Calls the function f for each constant in the integer sequence.
-            /// @param f The function.
-            template <typename T, T... S, typename F>
-            constexpr void ForSequence(std::integer_sequence<T, S...>, F&& f)
-            {
-                (static_cast<void>(f(std::integral_constant<T, S>{})), ...);
-            }
-    };
+    /// Iterates the serializable properties of T and applies the function f to each.
+    /// @param f The function.
+    template <typename T, typename F>
+    constexpr inline void ForProperty(F&& f)
+    {
+        auto constexpr numberOfProperties = std::tuple_size<decltype(T::SerializerProperties())>::value;
+        ForSequence(std::make_index_sequence<numberOfProperties>{}, [&](auto i) {
+            auto constexpr property = std::get<i>(T::SerializerProperties());
+            f(property);
+        });
+    }
 }
 
 #endif // OPCOSERIALIZER_COMMON_HPP

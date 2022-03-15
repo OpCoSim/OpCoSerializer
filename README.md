@@ -27,7 +27,7 @@ struct TestTypeWithProperties final
 
     // Note - with GCC this can be a field. The function is required
     // for MSVC compatibility.
-    static auto constexpr properties() { return std::make_tuple(
+    static auto constexpr SerializerProperties() { return std::make_tuple(
         MakeProperty(&TestTypeWithProperties::i, "integer"),
         MakeProperty(&TestTypeWithProperties::d, "double"),
         MakeProperty(&TestTypeWithProperties::b, "boolean"),
@@ -41,7 +41,8 @@ Then instantiate a serializer and serialize away!
 ```cpp
 using namespace OpCoSerializer;
 
-JsonSerializer serializer{};
+JsonSerializerSettings settings{ .pretty = true };
+JsonSerializer serializer(settings);
 serializer.Serialize(value);
 ```
 

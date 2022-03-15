@@ -25,22 +25,54 @@ namespace OpCoSerializer::Json
 {
     /// Provides Json serialization and serialization logic for a type.
     /// @remarks Specialize this type in order to be able serialize or
-    /// deserialize any type of data. By default, this type will only
-    /// support rapidjson supported types for Value(). To enable nested
-    /// serialization, call these functions recursively.
+    /// deserialize any type of data. By default, this type will support:
+    /// - rapidjson supported numeric and boolean types
+    /// - Types that have OpCoSerializer properties that are recursively serializable.
     /// @tparam T The type.
     template <typename T>
     struct JsonTypeSerializer
-    {
+    {        
+        // We autodetect types with serialization properties and just
+        // attempt to serialize each as an object. This will work
+        // when each property type (recursively) in T is serializable.
+        // This means that types that nest serializable properties do not
+        // require specializations to deserialize as this would be laborious.
+
         /// Serializes the given value to a JSON value.
         /// @remarks For flexibility, the document is passed in so members
         /// (such as its allocator - required for some rapidjson functionality)
         /// is also available.
         /// @param document The document.
         /// @param value The value.
-        static rapidjson::Value Serialize(rapidjson::Document&, T& value)
+        static rapidjson::Value Serialize(rapidjson::Document& document, T& value)
         {
-            return rapidjson::Value(value);
+            if constexpr (HasSerializablePropertiesV<T>)
+            {
+                rapidjson::Value object;
+                object.SetObject();
+
+                ForProperty<T>([&](auto& property) {
+                    using PropertyType = typename std::remove_cvref<decltype(property)>::type;
+                    using Type = std::remove_cvref<typename PropertyType::Type>::type;
+                    auto propertyValue = value.*(property.member);
+                    auto key = std::string(property.name);
+                    object.AddMember(
+                        rapidjson::Value(key.c_str(), key.size(), document.GetAllocator()),
+                        JsonTypeSerializer<Type>::Serialize(document, propertyValue),
+                        document.GetAllocator()
+                    );
+                });
+
+                return object;
+            }
+            else if constexpr (std::is_enum_v<T>)
+            {
+                return rapidjson::Value(static_cast<int32_t>(value));
+            }
+            else
+            {
+                return rapidjson::Value(value);
+            }
         }
 
         /// Deserializes a value from the given JSON value.
@@ -48,7 +80,36 @@ namespace OpCoSerializer::Json
         /// @returns The deserialized value.
         static T Deserialize(rapidjson::Value& value)
         {
-            return value.Get<T>();
+            if constexpr (HasSerializablePropertiesV<T>)
+            {
+                T deserialized;
+                if constexpr (std::is_default_constructible_v<T> && std::is_copy_assignable_v<T>)
+                {
+                    deserialized = T{};
+                }
+
+                ForProperty<T>([&](auto& property) {
+                    using PropertyType = typename std::remove_cvref<decltype(property)>::type;
+                    using Type = std::remove_cvref<typename PropertyType::Type>::type;
+                    auto iterator = value.FindMember(property.name);
+                    if (iterator == value.MemberEnd())
+                    {
+                        throw OpCoSerializerException(std::string("Missing property during deserialization - ") + property.name);
+                    }
+
+                    deserialized.*(property.member) = JsonTypeSerializer<Type>::Deserialize(iterator->value);
+                });
+
+                return deserialized;
+            }
+            else if constexpr (std::is_enum_v<T>)
+            {
+                return static_cast<T>(value.Get<int32_t>());
+            }
+            else
+            {
+                return value.Get<T>();
+            }
         }
     };
 
@@ -91,6 +152,23 @@ namespace OpCoSerializer::Json
             }
 
             return vector;
+        }
+    };
+
+    /// JsonTypeSerializer specialization for a C++ string.
+    template <>
+    struct JsonTypeSerializer<std::string>
+    {
+        static rapidjson::Value Serialize(rapidjson::Document& document, std::string& value)
+        {
+            rapidjson::Value string;
+            string.SetString(value.c_str(), value.size(), document.GetAllocator());
+            return string;
+        }
+
+        static std::string Deserialize(rapidjson::Value& value)
+        {
+            return std::string(value.GetString());
         }
     };
 }
