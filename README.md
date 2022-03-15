@@ -1,6 +1,6 @@
 # OpCoSerializer
 
-![version](https://img.shields.io/badge/Version-0.1-blue)
+![version](https://img.shields.io/badge/Version-0.2-blue)
 ![license](https://img.shields.io/badge/License-MIT-blue)
 ![c++](https://img.shields.io/badge/C++-20-blue)
 
