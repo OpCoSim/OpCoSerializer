@@ -65,6 +65,10 @@ namespace OpCoSerializer::Json
 
                 return object;
             }
+            else if constexpr (std::is_enum_v<T>)
+            {
+                return rapidjson::Value(static_cast<int32_t>(value));
+            }
             else
             {
                 return rapidjson::Value(value);
@@ -97,6 +101,10 @@ namespace OpCoSerializer::Json
                 });
 
                 return deserialized;
+            }
+            else if constexpr (std::is_enum_v<T>)
+            {
+                return static_cast<T>(value.Get<int32_t>());
             }
             else
             {

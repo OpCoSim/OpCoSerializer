@@ -76,6 +76,25 @@ struct WithNested final
     };
 };
 
+enum class TestEnum
+{
+    Value
+};
+
+struct WithEnum final
+{
+    TestEnum enumValue;
+
+    bool operator==(WithEnum const& other) const
+    {
+        return enumValue == other.enumValue;
+    }
+
+    static auto constexpr SerializerProperties() { 
+        return std::make_tuple(MakeProperty(&WithEnum::enumValue, "enum"));
+    };
+};
+
 TEST(JsonSerializer, SerializesExpectedString)
 {
     JsonSerializer serializer{};
@@ -137,6 +156,17 @@ TEST(JsonSerializer, NestedRoundTripTest)
     
     auto serialized = serializer.Serialize(value);
     auto deserialized = serializer.Deserialize<WithNested>(serialized);
+
+    ASSERT_EQ(value, deserialized);
+}
+
+TEST(JsonSerializer, EnumRoundTripTest)
+{
+    JsonSerializer serializer{};
+    WithEnum value = { TestEnum::Value };
+    
+    auto serialized = serializer.Serialize(value);
+    auto deserialized = serializer.Deserialize<WithEnum>(serialized);
 
     ASSERT_EQ(value, deserialized);
 }
