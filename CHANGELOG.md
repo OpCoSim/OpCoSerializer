@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `std::string` support in JSON serializer.
 
+### 🙌 Improvements
+
+- Types with OpCoSerializer properties are now automatically detected and serialized to objects.
+- Renames `properties` to `SerializerProperties` for clearer intent on consuming types.
+
 ## 🔖 [[v0.1.0]](https://github.com/OpCoSim/OpCoSerializer/releases/tag/v0.1.0 "v0.1.0 Release")
 
 ### ✨ Added

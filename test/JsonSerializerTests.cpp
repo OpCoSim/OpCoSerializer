@@ -1,3 +1,23 @@
+// Copyright (c) 2022 OpCoSim
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include <gtest/gtest.h>
 #include "OpCoSerializer/OpCoSerializer.hpp"
 
@@ -17,13 +37,43 @@ struct TestTypeWithProperties final
         return i == other.i && d == other.d && b == other.b && v == other.v;
     }
 
-    static auto constexpr properties() { return std::make_tuple(
-        MakeProperty(&TestTypeWithProperties::i, "integer"),
-        MakeProperty(&TestTypeWithProperties::d, "double"),
-        MakeProperty(&TestTypeWithProperties::b, "boolean"),
-        MakeProperty(&TestTypeWithProperties::v, "vector"),
-        MakeProperty(&TestTypeWithProperties::s, "string")
-    );};
+    static auto constexpr SerializerProperties() { 
+        return std::make_tuple(
+            MakeProperty(&TestTypeWithProperties::i, "integer"),
+            MakeProperty(&TestTypeWithProperties::d, "double"),
+            MakeProperty(&TestTypeWithProperties::b, "boolean"),
+            MakeProperty(&TestTypeWithProperties::v, "vector"),
+            MakeProperty(&TestTypeWithProperties::s, "string")
+        );
+    };
+};
+
+struct Nested final
+{
+    int value;
+
+    bool operator==(Nested const& other) const
+    {
+        return value == other.value;
+    }
+
+    static auto constexpr SerializerProperties() { 
+        return std::make_tuple(MakeProperty(&Nested::value, "value"));
+    };
+};
+
+struct WithNested final
+{
+    Nested nested;
+
+    bool operator==(WithNested const& other) const
+    {
+        return nested == other.nested;
+    }
+
+    static auto constexpr SerializerProperties() { 
+        return std::make_tuple(MakeProperty(&WithNested::nested, "nested"));
+    };
 };
 
 TEST(JsonSerializer, SerializesExpectedString)
@@ -72,6 +122,21 @@ TEST(JsonSerializer, RoundTripTest)
     
     auto serialized = serializer.Serialize(value);
     auto deserialized = serializer.Deserialize<TestTypeWithProperties>(serialized);
+
+    ASSERT_EQ(value, deserialized);
+}
+
+TEST(JsonSerializer, NestedRoundTripTest)
+{
+    JsonSerializer serializer{};
+    WithNested value = {
+        Nested {
+            4
+        }
+    };
+    
+    auto serialized = serializer.Serialize(value);
+    auto deserialized = serializer.Deserialize<WithNested>(serialized);
 
     ASSERT_EQ(value, deserialized);
 }
